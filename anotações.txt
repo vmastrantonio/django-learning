@@ -1,17 +1,95 @@
-﻿# Django é um framework web Python de alto nível que incentiva o desenvolvimento rápido e o design limpo e pragmático. Construído por desenvolvedores experientes, ele cuida de grande parte do incômodo do desenvolvimento web, para que você possa se concentrar em escrever seu aplicativo sem precisar reinventar a roda. É gratuito e de código aberto.
+﻿### Significado de django
+    -> Django é um framework web Python de alto nível que incentiva o desenvolvimento rápido e o design limpo e pragmático. Construído por desenvolvedores experientes, ele cuida de grande parte do incômodo do desenvolvimento web, para que você possa se concentrar em escrever seu aplicativo sem precisar reinventar a roda. É gratuito e de código aberto.
 
-python -m venv .venv                                                -> Cria um ambiente virtual com o nome .venv 
-.\.venv\Scripts\activate                                            -> Abre o arquivo activate para ativar o ambiente virtual
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass          -> Permite alterações e execuções de scripts externos
-deactivate                                                          -> Sai do ambiente virtual
-pip install Django                                                  -> instala o django
+    -> Conceito: A ideia do django é que o projeto seja separado em APPS, que são modulares, e podem ser reutilizados para diferentes projetos e o próprio django é um conjunto de diversos APPS.
 
-django-admin --version                              -> Verifica a versão do django
-django-admin startproject nome_projeto .            -> Cria um novo projeto django
 
-python manage.py runserver          ->  Executa o servidor de desenvolvimento do django
+### Comandos primitivos do terminal
+    # python -m venv .venv                                                -> Cria um ambiente virtual com o nome .venv 
+    # pip install Django                                                  -> Se utilizar esse comando com o ambiente virtual aberto, a instalação acontecerá dentro do ambiente virtual.
+    # Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass          -> Permite alterações e execuções de scripts externos
+    # .\.venv\Scripts\activate                                            -> Acessa o ambiente virtual
+    # deactivate                                                          -> Sai do ambiente virtual
 
-Arquivos django
-# nome_projeto              -> Pasta que administra o ambiente virtual
-# manage.py                 -> Permite que o django execute seus comandos
-# wsgi.py                   -> 
+
+### Comandos Django
+    # django-admin --version                                -> Verifica a versão do django
+    # django-admin startproject nome_projeto .              -> Cria um novo projeto django
+
+    # python manage.py runserver                            ->  Executa o servidor de desenvolvimento do django
+    # python manage.py startapp nome_app                    -> Cria uma nova APP com o nome nom_app
+    # python manage.py makemigrations                       -> Cria novas migrações dentro da pasta migrations e aguarda que elas sejam aplicadas.
+    # python manage.py migrate                              -> Aplica migrações já existentes e cria os bancos de dados já migrados
+
+
+### Arquitetura Django (MTV)
+    # Model             -> Camada responsável pela base de dados
+    # Template          -> Camada de interação e visualização dos dados (html)
+    # view              -> Reponsável por dizer o que tem que ser feito quando determinada requisição for feita
+
+
+### Arquivos
+    ## Padrão do django
+        # nome_projeto                              -> Pasta que administra o ambiente virtual
+        # manage.py                                 -> Permite que o django execute seus comandos
+        # wsgi.py                                   -> Dita a comunicação entre um projeto python e um servidor de aplicações web assincronas
+        # asgi.py                                   -> Dita a comunicação entre um projeto python e um servidor de aplicações web
+        # settings.py                               -> Responsável pelas configurações django
+            - Para instalar uma nova APP, adicionar em "INSTALLED_APPS" o caminho para a classe dentro do arquivo apps.py dentro da app.           Exp: 'todos.apps.TodosConfig'
+
+            ** Não é recomendado manter alguns atributos do settings.py (SECRET_KEY, DEBUG, ALLOWED_HOSTS) no próprio settings, pois não é seguro
+                1 - Para isso, utilizamos a biblioteca "python-decouple" para isolar as configurações do ambiente executável.
+                2 - Após instalar a biblioteca, criamos um arquivo chamado ".env" no mesmo local do arquivo "manage.py" e adicionamos os atributos sem aspas e espaços. 
+                    SECRET_KEY=django-insecure-(opzpfja^bzyqw0)1=zu!iis-=v-d($0u#sd_cgzk4)3s_87-b
+                    DEBUG=True
+                    ALLOWED_HOSTS=*
+                3 - No arquivo settings.py, deve-se fazer a importação do modulo config e a classe Csv do decouple utilizando "from decouple import config, Csv"
+                4 - E nos atributos do arquivo settings.py, substituimos os dados por referências ao decouple para acessar os atributos em .env
+                    SECRET_KEY = config("SECRET_KEY")                           -> Seta a configuração para secret_key dentro de .env
+                    DEBUG = config("DEBUG", cast=bool, default=False)           -> Seta a configuração para debug, define que deve ser convertido de string para boleano e que se não for declarado o padrão é false
+                    ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())         -> Seta a configuração para allowed_hosts e define que vai ser convertido de asterisco para uma lista >>ACHO<<
+
+                    ** OBS: O arquivo .env deve existir apenas na máquina de desenvolvimento, lembrar de adicionar ao .gitignore para que ele não seja exposto
+
+            ** Assim como alguns atributos, não é seguro manter informações do banco de dados no settings, pois também não é seguro. Porém o django não suporta o padrão de string de conexão para o banco de dados e necessita de outra biblioteca para isso, a biblioteca dj-database-url. deve-se instalar no ambiente virtual através de "pip install dj-database-url"
+                1 - Após instalar a biblioteca, importamos a classe "from dj_database_url import parse as db_url"
+                2 - No settings, substituimos as informações do banco de dados de 'default': { 'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3', } <- PARA -> 'default': config("DATABASE_URL", default=f'sqlite:///{BASE_DIR / "db.sqlite3"}', cast=db_url)
+                3 - Não precisa ser adicionado ao env, pois utilizamos essa mesmo do default.
+
+
+
+        # urls.py                                   -> Define os redirecionamentos do site, e rotas do site.
+            - As views de APPS criados, precisam ser importadas dentro de urls.py utilizando "from NOMEAPP.views import NOMEFUNÇÃO" Exp: from todos.views import home
+            - path('', home),                       -> Caso o primeiro argumento não seja especificado, é a página inicial do site, o segundo argumento é o nome da função criada em views.py
+
+    ## Padrão do app
+        - Para trabalhar com templates, deve-se criar uma pasta chamada "templates" dentro da pasta do APP, e dentro da pasta "templates" criar outra pasta com o nome do APP. Dentro dessa pasta, ficará os arquivos HTML do site.
+        # __init__            -> Arquivo do python
+        # admin.py            -> Arquivo de configuração do painel admin
+        # apps.py             -> Configurações especificas daquela app
+        # models.py           -> Define os modelos de banco de dados do APP por meio de classes python
+            * Todas as classes da camada de modelo, para serem reconhecidas como modelo, precisam herdar um atributo de uma classe django chamada "model" o atributo chamado "models.Model"         Exp: class Todo(models.Model):
+            * Após definida, a classe representa diretamente a tabela no banco de dados, as colunas da tabela serão atributos da classe
+            * Lista de possiveis atributos e tipos de dados: https://docs.djangoproject.com/pt-br/4.2/ref/models/fields/#model-field-types
+            * Após a definição da classe, precisamos utilizar comandos migrate para criar e aplicar as migrações do banco de dados.
+            * Isso permite um controle de versão do banco de dados, através do migrate, sem ter que fazer isso manualmente pelo sql.
+
+        # tests.py            -> Testes automatizados para a APP
+        # views.py            -> Define o que é feito quando determinada view é executada pelo urls.py
+            * É possível criar views por meio de funções. Elas necessariamente precisam receber um argumento que é a requisição feita pelo cliente, normalmente chamado de "request" e necessitam obrigatoriamente retornar uma resposta para o cliente, que pode ser das formas abaixo:
+                - HttpResponse          ->  Retorna uma linha HTML>         Exp: return HttpResponse("<p>Olá mundo</p>")
+                    - Precisa ser importado com "from.django.http import HttpResponse"
+                - render                -> Possibilita renderizar um arquivo HTML do template para o usuário, utiliza-se "return render(request, "todos/index.html") onde request é o argumento da requisição e "todos/index.html" é o caminho html dentro da pasta templates que deve ser criada dentro do APP.
+                    - Por padrão já vem importada com "from django.shortcuts import render"
+
+        # migrations          -> 
+
+### Padronização de código (PEP-8)
+    O python possuí regras de formatação relacionadas a aspas, e identação que são definidas por um padrão chamado PEP-8. Porém possuímos uma ferramenta que faz essa formatação para gente de forma automática como a biblioteca "black" https://wiki.python.org.br/GuiaDeEstilo
+    - pip install black         -> Instala a biblioteca black
+    - black .                   -> Faz a formatação de todos arquivos e pastas
+    - CTRL > SHIFT > P
+        - Open Workspace Settings
+            "editor.formatOnSave": true,
+            "python.formatting.provider": "black"
+            "editor.defaultFormatter": "ms-python.black-formatter"
