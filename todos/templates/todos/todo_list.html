@@ -1,0 +1,14 @@
+﻿<h1>Lista de tarefas</h1>
+
+<ul>
+    {%for todo in todos%}
+    <li>{{ todos.title }}</li>
+    {% endfor %}
+</ul>
+
+{% comment %}{{ nome }}
+<ul>
+    {% for aluno in alunos %}
+        <li>{{ aluno }}</li>
+    {% endfor %}
+</ul> {% endcomment %}

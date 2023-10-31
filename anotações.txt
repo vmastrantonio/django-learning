@@ -4,12 +4,14 @@
     -> Conceito: A ideia do django é que o projeto seja separado em APPS, que são modulares, e podem ser reutilizados para diferentes projetos e o próprio django é um conjunto de diversos APPS.
 
 
+
 ### Comandos primitivos do terminal
     # python -m venv .venv                                                -> Cria um ambiente virtual com o nome .venv 
     # pip install Django                                                  -> Se utilizar esse comando com o ambiente virtual aberto, a instalação acontecerá dentro do ambiente virtual.
     # Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass          -> Permite alterações e execuções de scripts externos
     # .\.venv\Scripts\activate                                            -> Acessa o ambiente virtual
     # deactivate                                                          -> Sai do ambiente virtual
+
 
 
 ### Comandos Django
@@ -22,14 +24,16 @@
     # python manage.py migrate                              -> Aplica migrações já existentes e cria os bancos de dados já migrados
 
 
+
 ### Arquitetura Django (MTV)
     # Model             -> Camada responsável pela base de dados
     # Template          -> Camada de interação e visualização dos dados (html)
     # view              -> Reponsável por dizer o que tem que ser feito quando determinada requisição for feita
 
 
+
 ### Arquivos
-    ## Padrão do django
+    ## Arquivos padrões do Django
         # nome_projeto                              -> Pasta que administra o ambiente virtual
         # manage.py                                 -> Permite que o django execute seus comandos
         # wsgi.py                                   -> Dita a comunicação entre um projeto python e um servidor de aplicações web assincronas
@@ -40,9 +44,11 @@
             ** Não é recomendado manter alguns atributos do settings.py (SECRET_KEY, DEBUG, ALLOWED_HOSTS) no próprio settings, pois não é seguro
                 1 - Para isso, utilizamos a biblioteca "python-decouple" para isolar as configurações do ambiente executável.
                 2 - Após instalar a biblioteca, criamos um arquivo chamado ".env" no mesmo local do arquivo "manage.py" e adicionamos os atributos sem aspas e espaços. 
-                    SECRET_KEY=django-insecure-(opzpfja^bzyqw0)1=zu!iis-=v-d($0u#sd_cgzk4)3s_87-b
-                    DEBUG=True
-                    ALLOWED_HOSTS=*
+                    ** >> LEMBRAR DE DEIXAR A PRIMEIRA LINHA EM BRANCO, PARA EVITAR ERROS <<
+                        SECRET_KEY=django-insecure-(opzpfja^bzyqw0)1=zu!iis-=v-d($0u#sd_cgzk4)3s_87-b
+                        DEBUG=True
+                        ALLOWED_HOSTS=*
+
                 3 - No arquivo settings.py, deve-se fazer a importação do modulo config e a classe Csv do decouple utilizando "from decouple import config, Csv"
                 4 - E nos atributos do arquivo settings.py, substituimos os dados por referências ao decouple para acessar os atributos em .env
                     SECRET_KEY = config("SECRET_KEY")                           -> Seta a configuração para secret_key dentro de .env
@@ -56,36 +62,38 @@
                 2 - No settings, substituimos as informações do banco de dados de 'default': { 'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3', } <- PARA -> 'default': config("DATABASE_URL", default=f'sqlite:///{BASE_DIR / "db.sqlite3"}', cast=db_url)
                 3 - Não precisa ser adicionado ao env, pois utilizamos essa mesmo do default.
 
-
-
         # urls.py                                   -> Define os redirecionamentos do site, e rotas do site.
             - As views de APPS criados, precisam ser importadas dentro de urls.py utilizando "from NOMEAPP.views import NOMEFUNÇÃO" Exp: from todos.views import home
             - path('', home),                       -> Caso o primeiro argumento não seja especificado, é a página inicial do site, o segundo argumento é o nome da função criada em views.py
 
-    ## Padrão do app
-        - Para trabalhar com templates, deve-se criar uma pasta chamada "templates" dentro da pasta do APP, e dentro da pasta "templates" criar outra pasta com o nome do APP. Dentro dessa pasta, ficará os arquivos HTML do site.
-        # __init__            -> Arquivo do python
-        # admin.py            -> Arquivo de configuração do painel admin
-        # apps.py             -> Configurações especificas daquela app
-        # models.py           -> Define os modelos de banco de dados do APP por meio de classes python
-            * Todas as classes da camada de modelo, para serem reconhecidas como modelo, precisam herdar um atributo de uma classe django chamada "model" o atributo chamado "models.Model"         Exp: class Todo(models.Model):
-            * Após definida, a classe representa diretamente a tabela no banco de dados, as colunas da tabela serão atributos da classe
-            * Lista de possiveis atributos e tipos de dados: https://docs.djangoproject.com/pt-br/4.2/ref/models/fields/#model-field-types
-            * Após a definição da classe, precisamos utilizar comandos migrate para criar e aplicar as migrações do banco de dados.
-            * Isso permite um controle de versão do banco de dados, através do migrate, sem ter que fazer isso manualmente pelo sql.
 
-        # tests.py            -> Testes automatizados para a APP
-        # views.py            -> Define o que é feito quando determinada view é executada pelo urls.py
-            * É possível criar views por meio de funções. Elas necessariamente precisam receber um argumento que é a requisição feita pelo cliente, normalmente chamado de "request" e necessitam obrigatoriamente retornar uma resposta para o cliente, que pode ser das formas abaixo:
-                - HttpResponse          ->  Retorna uma linha HTML>         Exp: return HttpResponse("<p>Olá mundo</p>")
-                    - Precisa ser importado com "from.django.http import HttpResponse"
-                - render                -> Possibilita renderizar um arquivo HTML do template para o usuário, utiliza-se "return render(request, "todos/index.html") onde request é o argumento da requisição e "todos/index.html" é o caminho html dentro da pasta templates que deve ser criada dentro do APP.
-                    - Por padrão já vem importada com "from django.shortcuts import render"
+    ## Arquivos especificos do APP
+        OBS: Deve-se criar uma pasta chamada "templates" dentro da pasta do APP, e dentro da pasta "templates" criar outra pasta com o nome do APP. Dentro dessa pasta, ficará os arquivos HTML do site.
+            # __init__            -> Arquivo do python
+            # admin.py            -> Arquivo de configuração do painel admin
+            # apps.py             -> Configurações especificas daquela app
+            # tests.py            -> Testes automatizados para a APP
+            # models.py           -> Define os modelos de banco de dados do APP por meio de classes python
+                * Todas as classes da camada de modelo, para serem reconhecidas como modelo, precisam herdar um atributo de uma classe django chamada "model" o atributo chamado "models.Model"         Exp: class Todo(models.Model):
+                * Após definida, a classe representa diretamente a tabela no banco de dados, as colunas da tabela serão atributos da classe
+                * Lista de possiveis atributos e tipos de dados: https://docs.djangoproject.com/pt-br/4.2/ref/models/fields/#model-field-types
+                * Após a definição da classe, precisamos utilizar comandos migrate para criar e aplicar as migrações do banco de dados.
+                * Isso permite um controle de versão do banco de dados, através do migrate, sem ter que fazer isso manualmente pelo sql.
 
-        # migrations          -> 
+            # views.py            -> Define o que é feito quando determinada view é executada pelo urls.py
+                OBS: É possível criar views por meio de funções, elas obrigatoriamente precisam receber um argumento que é a requisição feita pelo cliente, normalmente chamado de "request" e necessitam obrigatoriamente retornar uma resposta para o cliente, que pode através de uma das formas abaixo:
+                    - return render(request, "todos/index.html", {'nome': 'teste'})                -> Possibilita renderizar um arquivo HTML do template para o usuário. 
+                         -> :param request:                     -> Requisição feita pelo usuário (OBRIGATÓRIO)
+                         -> :param "todos/index.html":          -> Caminho do arquivo HTML
+                         -> :param {'nome': 'teste'}:           -> Declara em um dicionário informações que poderão ser acessadas pelo arquivo HTML através de {{ nome }}
+
+
+                    - HttpResponse          ->  Retorna uma linha HTML>         Exp: return HttpResponse("<p>Olá mundo</p>")
+                        - Precisa ser importado com "from.django.http import HttpResponse"
+
 
 ### Padronização de código (PEP-8)
-    O python possuí regras de formatação relacionadas a aspas, e identação que são definidas por um padrão chamado PEP-8. Porém possuímos uma ferramenta que faz essa formatação para gente de forma automática como a biblioteca "black" https://wiki.python.org.br/GuiaDeEstilo
+    O Python possuí regras de formatação que são definidas por um padrão chamado PEP-8. https://wiki.python.org.br/GuiaDeEstilo // Existe uma ferramenta que faz essa formatação automaticamente, a biblioteca "black":
     - pip install black         -> Instala a biblioteca black
     - black .                   -> Faz a formatação de todos arquivos e pastas
     - CTRL > SHIFT > P
